@@ -45,6 +45,32 @@ export function sourceSetupFile(filename: string, env?: any): Promise<any> {
     });
 }
 
+export function xacro(filename: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        let xacroCommand: string;
+        if (process.platform === "win32") {
+            xacroCommand = `xacro "\"${filename}\""`;
+        }
+        else {
+            xacroCommand = `bash -c "xacro '${filename}' && env"`;
+        }
+
+        let processOptions = {
+            cwd: extension.baseDir,
+            env: extension.env,
+            shell: "cmd",
+            windowsHide: false,
+        };
+        child_process.exec(xacroCommand, processOptions, (error, stdout, _stderr) => {
+            if (!error) {
+                resolve(stdout);
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
 /**
  * Gets the names of installed distros.
  */

@@ -80,6 +80,11 @@
                 "command": "ros.updatePythonPath",
                 "title": "Update Python Path",
                 "category": "ROS"
+            },
+            {
+                "category": "ROS",
+                "command": "ros.urdfPreview",
+                "title": "Preview URDF"
             }
         ],
         "configuration": {

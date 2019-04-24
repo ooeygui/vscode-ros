@@ -17,6 +17,7 @@ import * as ros_build_utils from "./ros/build-env-utils";
 import * as ros_cli from "./ros/cli";
 import * as ros_core from "./ros/core-helper";
 import * as ros_utils from "./ros/utils";
+import URDFPreviewManager from "./urdfPreview/previewManager"
 
 /**
  * The catkin workspace base dir.
@@ -78,6 +79,15 @@ export async function activate(context: vscode.ExtensionContext) {
         "cpp", new cpp_formatter.CppFormatter()
     ));
 
+    URDFPreviewManager.INSTANCE.setContext(context);
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ros.urdfPreview', () => {
+          URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri)
+        })
+      );  
+  
+  
     // Source the environment, and re-source on config change.
     let config = vscode_utils.getExtensionConfiguration();
 
@@ -96,6 +106,8 @@ export async function activate(context: vscode.ExtensionContext) {
     sourceRosAndWorkspace();
 
     reporter.sendTelemetryActivate();
+    vscode.window.registerWebviewPanelSerializer('urdfPreview', URDFPreviewManager.INSTANCE);
+
     return {
         getBaseDir: () => baseDir,
         getEnv: () => env,

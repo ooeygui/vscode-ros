@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+    html, body 
+    {
+        background-color: powderblue;
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: stretch;
+    }
+    
+    #urdf
+    {
+        width: 100%;
+        height: 100%;
+        overflow:hidden;
+    }
+</style>
+
+
+<script src="http://static.robotwebtools.org/threejs/current/three.js"></script>
+<script src="http://static.robotwebtools.org/threejs/current/ColladaLoader.js"></script>
+<script src="http://static.robotwebtools.org/threejs/current/STLLoader.js"></script>
+<script src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script src="http://static.robotwebtools.org/roslibjs/current/roslib.js"></script>
+<script src="http://static.robotwebtools.org/ros3djs/current/ros3d.js"></script>
+
+<script>
+    
+function TFFakeClient() {
+
+}
+
+TFFakeClient.prototype.subscribe = function(frameID, callback) {
+    // need to do this or things don't render
+    var tf = new ROSLIB.Transform();
+    callback(tf);
+}
+
+TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
+}
+
+
+  function applyURDF(urdfText) {
+    if (window.urdfModel) {
+        window.viewer.scene.remove(window.urdfModel); 
+    }
+
+    window.urdfModel = new ROSLIB.UrdfModel({
+        string : urdfText,
+        path: "vscode-resource:"
+      });
+
+    var tfClient = new TFFakeClient();
+
+    // load all models
+    var urdfScene = new ROS3D.Urdf({
+      urdfModel : window.urdfModel,
+      path : "vscode-resource:",
+      tfClient : tfClient,
+      loader : ROS3D.COLLADA_LOADER_2
+    });
+    
+    window.viewer.scene.add(urdfScene);
+
+    for(var jointName in window.urdfModel.joints) {
+            var joint = window.urdfModel.joints[jointName];
+            var childFrameID = joint.child;
+
+            for (var nodes = urdfScene.children, i = 0; i < nodes.length; i++) {
+                var seekingFrameID = nodes[i].frameID;
+                if (seekingFrameID[0] === '/') {
+                    seekingFrameID = seekingFrameID.substring(1);
+                }
+                if (seekingFrameID == childFrameID) {
+                    var poseTransformed = new ROSLIB.Pose(nodes[i].pose);
+                    var tf = new ROSLIB.Transform({translation : joint.origin.position, rotation : joint.origin.orientation});
+                    poseTransformed.applyTransform(tf);
+                    nodes[i].updatePose(poseTransformed);
+                    break;
+                }
+            }
+        }
+  }
+  function init() {
+    window.addEventListener('message', event => {
+        const message = event.data; // The JSON data our extension sent
+        switch (message.command) {
+            case 'urdf':
+            applyURDF(message.urdf);
+            break;
+        }
+      });    
+      
+      // Create the main viewer.
+      window.viewer = new ROS3D.Viewer({
+        divID : 'urdf',
+        width : urdf.clientWidth,
+        height : urdf.clientHeight,
+        antialias : true
+      });
+
+      // Add a grid.
+      window.viewer.addObject(new ROS3D.Grid());
+  }
+  function resize() {
+    if (window.viewer) {
+        window.viewer.resize(urdf.clientWidth, urdf.clientHeight);
+    }      
+  }
+</script>
+</head>
+
+<body onload="init()"  onresize="resize()">
+  <div id="urdf"></div> 
+</body>
+</html>
