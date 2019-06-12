@@ -5,7 +5,7 @@
 <style>
     html, body 
     {
-        background-color: powderblue;
+        background-color: var(--vscode-editor-background);
         padding: 0;
         margin: 0;
         height: 100%;
@@ -88,6 +88,8 @@ TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
         }
   }
   function init() {
+    const vscode = acquireVsCodeApi();
+
     window.addEventListener('message', event => {
         const message = event.data; // The JSON data our extension sent
         switch (message.command) {
@@ -102,6 +104,8 @@ TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
         divID : 'urdf',
         width : urdf.clientWidth,
         height : urdf.clientHeight,
+        background : '#00000000',
+        alpha : 0.001,
         antialias : true
       });
 
