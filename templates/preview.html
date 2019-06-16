@@ -37,7 +37,8 @@ function TFFakeClient() {
 }
 
 TFFakeClient.prototype.subscribe = function(frameID, callback) {
-    // need to do this or things don't render
+    // ROS 3D requires a TF Client refresh in order
+    // to apply the transforms; fake it here. 
     var tf = new ROSLIB.Transform();
     callback(tf);
 }
@@ -46,7 +47,7 @@ TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
 }
 
 
-  function applyURDF(urdfText) {
+function applyURDF(urdfText) {
     if (window.urdfModel) {
         window.viewer.scene.remove(window.urdfModel); 
     }
@@ -58,7 +59,6 @@ TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
 
     var tfClient = new TFFakeClient();
 
-    // load all models
     var urdfScene = new ROS3D.Urdf({
       urdfModel : window.urdfModel,
       path : "vscode-resource:",
