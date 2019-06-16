@@ -96,6 +96,9 @@ TFFakeClient.prototype.unsubscribe = function(frameID, callback) {
             case 'urdf':
             applyURDF(message.urdf);
             break;
+            case 'previewFile':
+            vscode.setState({previewFile: message.previewFile});
+            break;
         }
       });    
       

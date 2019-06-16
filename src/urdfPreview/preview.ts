@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { xacro, getPackages } from '../utils'; 
+import { xacro, getPackages } from '../ros/utils'; 
 import { Disposable, window } from 'vscode';
 
 export default class URDFPreview 
 {
     private _resource: vscode.Uri;
-    private _locked: boolean;
+    private _processing: boolean;
     private  _context: vscode.ExtensionContext;
     private _disposable: Disposable;
     _urdfEditor: vscode.TextEditor;
@@ -46,7 +46,7 @@ export default class URDFPreview
         this._webview = webview;
         this._context = context;
         this._resource = resource;
-        this._urdfEditor = vscode.window.activeTextEditor;
+        this._processing = false;
 
         let subscriptions: Disposable[] = [];
 
@@ -84,17 +84,19 @@ export default class URDFPreview
     }
 
     public async refresh() {
-        if (this._urdfEditor && this._urdfEditor.document.uri.fsPath === this._resource.fsPath) {
+        if (this._processing == false && vscode.window.activeTextEditor.document.uri.fsPath === this._resource.fsPath) {
+            this._processing = true;
+
             var urdfText;
-            let ext = path.extname(this._urdfEditor.document.uri.fsPath);
+            let ext = path.extname(vscode.window.activeTextEditor.document.uri.fsPath);
             if (ext == ".xacro") {
                 try {
-                    urdfText = await xacro(this._urdfEditor.document.uri.fsPath);
+                    urdfText = await xacro(vscode.window.activeTextEditor.document.uri.fsPath);
                 } catch (err) {
-                    vscode.window.setStatusBarMessage(err.message, 1000);
+                    vscode.window.showErrorMessage(err.message);
                 }
             } else {
-                urdfText = this._urdfEditor.document.getText();
+                urdfText = vscode.window.activeTextEditor.document.getText();
             }
 
             var packageMap = await getPackages();
@@ -106,7 +108,12 @@ export default class URDFPreview
                 urdfText = urdfText.replace('package://' + match[1], packageMap[match[1]]);
             }
 
+            var previewFile = vscode.window.activeTextEditor.document.uri.toString();
+
+            this._webview.webview.postMessage({ command: 'previewFile', previewFile: previewFile});
             this._webview.webview.postMessage({ command: 'urdf', urdf: urdfText });
+
+            this._processing = false;
         }
     }
 
@@ -115,9 +122,7 @@ export default class URDFPreview
         context: vscode.ExtensionContext,
         state: any,
     ): Promise<URDFPreview> {
-        const resource = vscode.Uri.parse(state.resource);
-        const locked = state.locked;
-        const line = state.line;
+        const resource = vscode.Uri.parse(state.previewFile);
 
         const preview = new URDFPreview(
             webview,

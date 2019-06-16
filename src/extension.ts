@@ -59,6 +59,7 @@ export enum Commands {
     TerminateRosCore = "ros.stopCore",
     UpdateCppProperties = "ros.updateCppProperties",
     UpdatePythonPath = "ros.updatePythonPath",
+    URDFPreview = "ros.urdfPreview",
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -81,13 +82,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     URDFPreviewManager.INSTANCE.setContext(context);
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('ros.urdfPreview', () => {
-          URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri)
-        })
-      );  
-  
-  
     // Source the environment, and re-source on config change.
     let config = vscode_utils.getExtensionConfiguration();
 
@@ -103,10 +97,12 @@ export async function activate(context: vscode.ExtensionContext) {
         config = updatedConfig;
     }));
 
-    sourceRosAndWorkspace();
+    sourceRosAndWorkspace().then(() =>
+    {
+        vscode.window.registerWebviewPanelSerializer('urdfPreview', URDFPreviewManager.INSTANCE);
+    });
 
     reporter.sendTelemetryActivate();
-    vscode.window.registerWebviewPanelSerializer('urdfPreview', URDFPreviewManager.INSTANCE);
 
     return {
         getBaseDir: () => baseDir,
@@ -196,6 +192,10 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(Commands.Roslaunch, () => {
             ros_cli.roslaunch(context);
         }),
+
+        vscode.commands.registerCommand(Commands.URDFPreview, () => {
+            URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri)
+        })
     );
 
     // Generate config files if they don't already exist.
