@@ -35,7 +35,7 @@ export default class URDFPreview
         );
 
         return new URDFPreview(editor, context, resource);
-    }
+    } 
 
     private constructor(
         webview: vscode.WebviewPanel,
@@ -84,37 +84,58 @@ export default class URDFPreview
     }
 
     public async refresh() {
-        if (this._processing == false && vscode.window.activeTextEditor.document.uri.fsPath === this._resource.fsPath) {
-            this._processing = true;
-
-            var urdfText;
-            let ext = path.extname(vscode.window.activeTextEditor.document.uri.fsPath);
-            if (ext == ".xacro") {
-                try {
-                    urdfText = await xacro(vscode.window.activeTextEditor.document.uri.fsPath);
-                } catch (err) {
-                    vscode.window.showErrorMessage(err.message);
-                }
-            } else {
-                urdfText = vscode.window.activeTextEditor.document.getText();
-            }
-
-            var packageMap = await getPackages();
-
-            // replace package://(x) with fully resolved paths
-            var pattern =  /package:\/\/(.*?)\//g;
-            var match;
-            while (match = pattern.exec(urdfText)) {
-                urdfText = urdfText.replace('package://' + match[1], packageMap[match[1]]);
-            }
-
-            var previewFile = vscode.window.activeTextEditor.document.uri.toString();
-
-            this._webview.webview.postMessage({ command: 'previewFile', previewFile: previewFile});
-            this._webview.webview.postMessage({ command: 'urdf', urdf: urdfText });
-
-            this._processing = false;
+        if (this._processing == false) {
+            this.loadResource();
         }
+    }
+
+    private async loadResource() {
+        this._processing = true;
+
+        var urdfText;
+        let ext = path.extname(this._resource.fsPath);
+        if (ext == ".xacro") {
+            try {
+                urdfText = await xacro(this._resource.fsPath);
+            } catch (err) {
+                vscode.window.showErrorMessage(err.message);
+            }
+        } else {
+            // at this point, the text document could have changed
+            var doc = await vscode.workspace.openTextDocument(this._resource.fsPath);
+            urdfText = doc.getText();
+        }
+
+        var packageMap = await getPackages();
+            
+        // replace package://(x) with fully resolved paths
+        var pattern =  /package:\/\/(.*?)\//g;
+        var match;
+        while (match = pattern.exec(urdfText)) {
+            var packagePath = packageMap[match[1]];
+            if (packagePath.charAt(0)  === '/') {
+                // inside of mesh re \source, the loader attempts to concatinate the base uri with the new path. It first checks to see if the
+                // base path has a /, if not it adds it.
+                // We are attempting to use a protocol handler as the base path - which causes this to fail.
+                // basepath - vscode-resource:
+                // full path - /home/test/ros
+                // vscode-resource://home/test/ros.
+                // It should be vscode-resource:/home/test/ros.
+                // So remove the first char.
+
+                packagePath = packagePath.substr(1);
+            }
+            urdfText = urdfText.replace('package://' + match[1], packagePath);
+        }
+
+        var previewFile = this._resource.toString();
+
+        console.log("URDF previewing: " + previewFile);
+
+        this._webview.webview.postMessage({ command: 'previewFile', previewFile: previewFile});
+        this._webview.webview.postMessage({ command: 'urdf', urdf: urdfText });
+
+        this._processing = false;
     }
 
     public static async revive(
