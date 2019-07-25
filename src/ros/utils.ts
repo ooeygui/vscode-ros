@@ -56,7 +56,7 @@ export function xacro(filename: string): Promise<any> {
 
         let xacroCommand: string;
         if (process.platform === "win32") {
-            xacroCommand = `cmd /c \"xacro "\"${filename}\"\""`;
+            xacroCommand = `cmd /c "xacro "${filename}""`;
         } else {
             xacroCommand = `bash -c "xacro '${filename}' && env"`;
         }
