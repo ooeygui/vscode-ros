@@ -27,7 +27,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 8.x
+          node-version: 14.x
       - run: npm install
   archive-vsix:
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 8.x
+          node-version: 14.x
       - run: npm install
       - name: Build VSIX package
         run: |
@@ -59,7 +59,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 8.x
+          node-version: 14.x
       - run: npm install
       - name: Build VSIX package
         run: |
