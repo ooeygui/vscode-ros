@@ -93,7 +93,7 @@
             },
             {
                 "command": "ros.rosdep",
-                "title": "Install ROS Dependencies for this workspace",
+                "title": "Install ROS Dependencies for this workspace using rosdep",
                 "category": "ROS"
             }
         ],
