@@ -16,6 +16,12 @@
         "Debuggers",
         "Other"
     ],
+    "capabilities": {
+        "untrustedWorkspaces": {
+            "supported": false,
+            "description": "The Visual Studio Code ROS Extension calls ROS on behalf of packages in the workspace. This can execute code from within the workspace. For this reason, this extension requires a fully trusted workspace."
+        }
+    },
     "keywords": [
         "ros",
         "robot"
@@ -358,18 +364,18 @@
         "xmlrpc": "^1.3.2"
     },
     "devDependencies": {
-        "@types/glob": "^7.1.3",
-        "@types/js-yaml": "^4.0.1",
-        "@types/mocha": "^8.2.2",
+        "@types/glob": "^7.1.4",
+        "@types/js-yaml": "^4.0.2",
+        "@types/mocha": "^8.2.3",
         "@types/node": "^15.12.1",
-        "@types/shell-quote": "^1.7.0",
-        "@types/tmp": "^0.2.0",
+        "@types/shell-quote": "^1.7.1",
+        "@types/tmp": "^0.2.1",
         "@types/vscode": "^1.56.0",
-        "@types/xmlrpc": "^1.3.6",
+        "@types/xmlrpc": "^1.3.7",
         "glob": "^7.1.7",
-        "mocha": "^8.4.0",
+        "mocha": "^9.0.2",
         "tslint": "^6.1.3",
-        "typescript": "^4.3.2",
+        "typescript": "^4.3.5",
         "vscode-test": "^1.5.2"
     },
     "extensionDependencies": [
