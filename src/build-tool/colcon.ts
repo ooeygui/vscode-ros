@@ -10,7 +10,7 @@ import * as common from "./common";
 import * as rosShell from "./ros-shell";
 
 function makeColcon(command: string, verb: string, args: string[], category?: string): vscode.Task {
-    const task = rosShell.make({type: command, command, args: [verb, '--base-paths', extension.baseDir, ...args]},
+    const task = rosShell.make({type: command, command, args: [verb, '--base-paths', extension.baseDir, `--cmake-args`, `-DCMAKE_BUILD_TYPE=RelWithDebInfo`,...args]},
                                category)
 
     return task;

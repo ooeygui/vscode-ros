@@ -69,17 +69,17 @@
             },
             {
                 "command": "ros.showCoreStatus",
-                "title": "Show Core Status",
+                "title": "Show Status",
                 "category": "ROS"
             },
             {
                 "command": "ros.startCore",
-                "title": "Start Core",
+                "title": "Start",
                 "category": "ROS"
             },
             {
                 "command": "ros.stopCore",
-                "title": "Stop Core",
+                "title": "Stop",
                 "category": "ROS"
             },
             {
