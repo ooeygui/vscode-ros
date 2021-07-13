@@ -230,7 +230,7 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
                                 ignoreFailures: true
                             }
                         ]
-                        };
+                    };
                     debugConfig = cppdbgLaunchConfig;
                 }
 
