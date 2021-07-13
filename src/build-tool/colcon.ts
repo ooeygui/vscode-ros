@@ -3,6 +3,7 @@
 
 import * as vscode from "vscode";
 
+import * as path from "path";
 import * as child_process from "child_process";
 import * as extension from "../extension";
 import * as common from "./common";
@@ -35,10 +36,23 @@ export class ColconProvider implements vscode.TaskProvider {
 }
 
 export async function isApplicable(dir: string): Promise<boolean> {
-    const opts = { dir, env: extension.env };
-    const { stdout, stderr } = await child_process.exec("colcon -h", opts);
-    for await (const line of stderr) {
-        return false;
+    const srcDir = path.join(dir, "src", "*")
+    let colconCommand: string;
+
+    if (process.platform === "win32") {
+        colconCommand = `colcon --log-base nul list --paths "\"${srcDir}\"`;
+    } else {
+        colconCommand = `colcon --log-base /dev/null list --paths "\"${srcDir}\"`;
     }
-    return true;
+
+    const { stdout, stderr } = await child_process.exec(colconCommand);
+
+    // Does this workspace have packages?
+    for await (const line of stdout) {
+        // Yes.
+        return true;
+    }
+
+    // no.
+    return false;
 }
