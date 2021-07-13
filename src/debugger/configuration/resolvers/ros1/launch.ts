@@ -281,6 +281,13 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
                         args: request.arguments,
                         environment: envConfigs,
                         stopAtEntry: stopOnEntry,
+                        setupCommands: [
+                            {
+                                text: "-enable-pretty-printing",
+                                description: "Enable pretty-printing for gdb",
+                                ignoreFailures: true
+                            }
+                        ]
                     };
                     debugConfig = cppdbgLaunchConfig;
                 }
