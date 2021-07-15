@@ -37,13 +37,13 @@ export class ColconProvider implements vscode.TaskProvider {
 }
 
 export async function isApplicable(dir: string): Promise<boolean> {
-    const srcDir = path.join(dir, "src", "*")
     let colconCommand: string;
+    const srcDir = path.join(dir, "src")
 
     if (process.platform === "win32") {
-        colconCommand = `colcon --log-base nul list --paths "\"${srcDir}\"`;
+        colconCommand = `colcon --log-base nul list --base-paths \"${srcDir}\"`;
     } else {
-        colconCommand = `colcon --log-base /dev/null list --paths "\"${srcDir}\"`;
+        colconCommand = `colcon --log-base /dev/null list --base-paths ${srcDir}`;
     }
 
     const { stdout, stderr } = await child_process.exec(colconCommand);
